@@ -1,0 +1,36 @@
+sudo apt update && sudo apt upgrade -y
+sudo apt install apache2 -y
+sudo apt install mariadb-server -y
+sudo mysql_secure_installation
+sudo apt install php php-mysql php-curl php-gd php-intl php-mbstring php-xml php-zip php-bz2 php-imap php-apcu -y
+sudo mysql -u root -p
+CREATE DATABASE glpidb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'glpiuser'@'localhost' IDENTIFIED BY 'passwordku';
+GRANT ALL PRIVILEGES ON glpidb.* TO 'glpiuser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+cd /tmp
+wget https://github.com/glpi-project/glpi/releases/download/10.0.14/glpi-10.0.14.tgz
+tar -xvzf glpi-10.0.14.tgz
+sudo mv glpi /var/www/html/
+sudo chown -R www-data:www-data /var/www/html/glpi
+sudo chmod -R 755 /var/www/html/glpi
+sudo nano /etc/apache2/sites-available/glpi.conf
+<VirtualHost *:80>
+    DocumentRoot /var/www/html/glpi
+    ServerName glpi.local
+
+    <Directory /var/www/html/glpi>
+        Options FollowSymlinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/glpi_error.log
+    CustomLog ${APACHE_LOG_DIR}/glpi_access.log combined
+</VirtualHost>
+sudo a2ensite glpi.conf
+sudo a2enmod rewrite
+sudo systemctl restart apache2
+http://<IP_SERVER>/glpi
+http://glpi.local
